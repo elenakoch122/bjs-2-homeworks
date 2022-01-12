@@ -6,30 +6,25 @@ class AlarmClock {
 
     addClock(time, callback, id) {
         if (id === undefined) {
-            const err = new Error ('Невозможно идентифицировать будильник. Параметр id не передан.');
-            throw err;
+            throw new Error ('Невозможно идентифицировать будильник. Параметр id не передан.');
         }
-        try {
-            if (this.alarmCollection.some(item => item.id === id)) {
-                console.error('Будильник с таким id уже существует');
-            } else {
-                this.alarmCollection.push({
-                    id: id,
-                    time: time,
-                    callback: callback
-                });
-            }
-        } catch (err) {
-            console.error(err);
+        if (this.alarmCollection.some(item => item.id === id)) {
+            console.error('Будильник с таким id уже существует');
+        } else {
+            this.alarmCollection.push({
+                id: id,
+                time: time,
+                callback: callback
+            });
         }
     }
 
     removeClock(id) {
         if (this.alarmCollection.some(item => item.id === id)) {
             this.alarmCollection = this.alarmCollection.filter(item => item.id !== id);
-            return `Будильник с id = ${id} успешно удален`;
+            return true;
         } else {
-            return `Будильника с id = ${id} не существует`;
+            return false;
         }
     }
 
