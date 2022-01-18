@@ -46,8 +46,8 @@ function debounceDecorator2(func, ms) {
     clearTimeout(timeoutID);
     timeoutID = setTimeout(() => {
       func.apply(this, ...args);
+      wrapper.count++;
     }, ms);
-    wrapper.count++;
   }
   wrapper.count = 0;
   return wrapper;
