@@ -1,23 +1,19 @@
 function cachingDecoratorNew(func) {
   let cache = [];
-  let amountCalls = 0;
   return function (...rest) {
     let key = rest.toString();
     let idx = cache.findIndex(item => item.args === key);
-    if (idx === -1) {
-      amountCalls++;
-      if (amountCalls === 6) {
-        cache.shift();
-        amountCalls = 5;
-      }
-      let res = func(...rest);
-      cache.push({args: key, result: res});
-      console.log(`Вычисляем: ${res}`);
-      return `Вычисляем: ${res}`;
-    } else {
+    if (idx !== -1) {
       console.log(`Из кэша: ${cache[idx].result}`);
       return `Из кэша: ${cache[idx].result}`;
     }
+    let res = func(...rest);
+    cache.push({args: key, result: res});
+    if (cache.length === 6) {
+      cache.shift();
+    }
+    console.log(`Вычисляем: ${res}`);
+    return `Вычисляем: ${res}`;
   }
 }
 
@@ -25,15 +21,15 @@ function debounceDecoratorNew(func, ms) {
   let isThrottled = false;
   let timeoutID;
   return function (...args) {
-    if (isThrottled) {
-      clearTimeout(timeoutID);
-      timeoutID = setTimeout(() => {isThrottled = false;}, ms);
+    if (!isThrottled) {
+      func.apply(this, ...args);
+      isThrottled = true;
       return;
     }
-    func.apply(this, ...args);
-    isThrottled = true;
-    timeoutID = setTimeout(() => {isThrottled = false;}, ms);
-    console.log(`timeoutID = ${timeoutID}`);
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => {
+      func.apply(this, ...args);
+    }, ms);
   }
 }
 
@@ -41,17 +37,17 @@ function debounceDecorator2(func, ms) {
   let isThrottled = false;
   let timeoutID;
   function wrapper (...args) {
-    if (isThrottled) {
-      clearTimeout(timeoutID);
-      timeoutID = setTimeout(() => {isThrottled = false;}, ms);
+    if (!isThrottled) {
+      func.apply(this, ...args);
+      isThrottled = true;
       wrapper.count++;
       return;
     }
-    func.apply(this, ...args);
-    isThrottled = true;
-    timeoutID = setTimeout(() => {isThrottled = false;}, ms);
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => {
+      func.apply(this, ...args);
+    }, ms);
     wrapper.count++;
-    console.log(`timeoutID = ${timeoutID}`);
   }
   wrapper.count = 0;
   return wrapper;
